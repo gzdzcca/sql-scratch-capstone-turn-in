@@ -1,0 +1,210 @@
+{\rtf1\ansi\ansicpg932\cocoartf1671\cocoasubrtf400
+{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset128 .HiraKakuInterface-W3;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0\cname textColor;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat2\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid1\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs24 \cf0 \
+1.Get familiar with the company\
+\
+How many campaigns, source use\
+What pages are on their website\
+\
+Select distinct utm_campaign\
+From page_visits;\
+\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 Select distinct utm_source\
+From page_visits;\
+\
+Select distinct page_view\
+From page_visits;\
+\
+\
+\
+2.what is the user journey\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf2 How many first touches is each campaign responsible for?
+\fs52 \
+
+\fs24 \cf0 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 WITH first_touch AS 
+\f1 (
+\f0 \
+    SELECT user_id
+\f1 ,
+\f0 \
+        MIN
+\f1 (
+\f0 timestamp
+\f1 )
+\f0  as first_touch_at\
+    FROM page_visits\
+    GROUP BY user_id
+\f1 ),
+\f0 \
+    \
+ft_attr AS 
+\f1 (
+\f0 \
+  SELECT ft.user_id
+\f1 ,
+\f0 \
+         ft.first_touch_at
+\f1 ,
+\f0 \
+         pv.utm_campaign\
+  FROM first_touch as ft\
+  JOIN page_visits as pv\
+    ON ft.user_id = pv.user_id\
+    AND ft.first_touch_at = pv.timestamp\
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f1 \cf0 )
+\f0 \
+SELECT ft_attr.utm_campaign
+\f1 ,
+\f0  count
+\f1 (
+\f0 *
+\f1 )
+\f0 \
+FROM ft_attr\
+group by 1\
+order by 2
+\f1 ;
+\f0 \
+\
+\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls1\ilvl0\cf0 How many last touches is each campaign responsible for?\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 with last_touch AS 
+\f1 (
+\f0 select user_id
+\f1 ,
+\f0  max
+\f1 (
+\f0 timestamp
+\f1 )
+\f0  as last_touch_at\
+from page_visits\
+group by user_id
+\f1 ),
+\f0 \
+lt_attr AS 
+\f1 (
+\f0 \
+  SELECT lt.user_id
+\f1 ,
+\f0 \
+         lt.last_touch_at
+\f1 ,
+\f0 \
+         pv.utm_source
+\f1 ,
+\f0 \
+         pv.utm_campaign
+\f1 ,
+\f0 \
+         pv.page_name\
+  FROM last_touch lt\
+  JOIN page_visits pv\
+    ON lt.user_id = pv.user_id\
+    AND lt.last_touch_at = pv.timestamp\
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f1 \cf0 )
+\f0 \
+SELECT \
+       lt_attr.utm_campaign
+\f1 ,
+\f0 \
+       COUNT
+\f1 (
+\f0 *
+\f1 )
+\f0 \
+FROM lt_attr\
+GROUP BY 1\
+ORDER BY 2 DESC
+\f1 ;
+\f0 \
+\
+\
+\
+How many visitors make a purchase?\
+\
+select count 
+\f1 (
+\f0 distinct user_id
+\f1 )
+\f0 \
+from page_visits\
+where page_name = '4 - purchase'
+\f1 ;
+\f0 \
+\
+\
+\
+How many last touches on the purchase page is each campaign responsible for?\
+\
+with last_touch AS 
+\f1 (
+\f0 select user_id
+\f1 ,
+\f0  max
+\f1 (
+\f0 timestamp
+\f1 )
+\f0  as last_touch_at\
+from page_visits\
+where page_name = '4 - purchase'\
+group by user_id
+\f1 ),
+\f0 \
+lt_attr AS 
+\f1 (
+\f0 \
+  SELECT lt.user_id
+\f1 ,
+\f0 \
+         lt.last_touch_at
+\f1 ,
+\f0 \
+         pv.utm_source
+\f1 ,
+\f0 \
+         pv.utm_campaign
+\f1 ,
+\f0 \
+         pv.page_name\
+  FROM last_touch lt\
+  JOIN page_visits pv\
+    ON lt.user_id = pv.user_id\
+    AND lt.last_touch_at = pv.timestamp\
+
+\f1 )
+\f0 \
+SELECT \
+       lt_attr.utm_campaign
+\f1 ,
+\f0 \
+       COUNT
+\f1 (
+\f0 *
+\f1 )
+\f0 \
+FROM lt_attr\
+GROUP BY 1\
+ORDER BY 2 DESC\
+
+\f1 ;}
